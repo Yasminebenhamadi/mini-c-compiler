@@ -1,0 +1,293 @@
+options {
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+}
+
+PARSER_BEGIN(MiniC)
+
+/**  Analyseur lexico-syntaxique Mini-C */
+public class MiniC {
+
+  /** Main entry point. */
+  public static void main(String args[]) throws ParseException {
+      MiniC parser = new MiniC(System.in);
+      while(true){
+        try{
+            parser.Z();
+        }
+        catch(Exception e){
+            System.out.println("error");
+        }
+      }
+  }
+}
+
+PARSER_END(MiniC)
+
+
+
+SKIP : {
+  <" ">
+| <"\t">
+| <"\n">
+| <"\r">
+}
+
+TOKEN : { < MagOp : "+" | "." > }
+TOKEN : { < TermOp : "*" | "/" > }
+TOKEN : { < FactorOp  : "+" | "-" > }
+TOKEN : { < Compare  : "==" | "<" | ">" | "<=" | ">=" | "!="> }
+TOKEN : { < NUMBER : "number" > }
+TOKEN : { < IDENTIFIER : "identifier" > }
+TOKEN : { < TYPE : "int" | "float" > }
+TOKEN : { < COLON : "," > }
+TOKEN : { < SEMICOLON : ";" > }
+TOKEN : { < ASSIGN : "=" > }
+TOKEN : { < FOR : "for" > }
+TOKEN : { < WHILE : "while" > }
+TOKEN : { < IF : "if" > }
+TOKEN : { < ELSE : "else" > }
+TOKEN : { < OPENB : "(" > }
+TOKEN : { < CLOSEB : ")" > }
+TOKEN : { < OPENC : "{" > }
+TOKEN : { < CLOSEC : "}" > }
+
+
+void Z() :
+{}
+{
+  Function() <EOF>
+}
+
+void Function() :
+{}
+{
+  Type() <IDENTIFIER> <OPENB> ArgList() <CLOSEB> CompoundStmt()
+}
+
+void ArgList() :
+{}
+{
+  Arg()
+  ArgListR()
+}
+
+void ArgListR() :
+{}
+{
+  (
+  <COLON>
+  Arg()
+  ArgListR()
+  )?
+}
+
+void Arg() :
+{}
+{
+   Type ()
+  <IDENTIFIER>
+}
+
+void Type() :
+{}
+{
+  <TYPE>
+}
+
+void Declaration() :
+{}
+{
+   Type ()
+   IdentList()
+   <SEMICOLON>
+
+}
+
+void IdentList () :
+{}
+{
+   <IDENTIFIER>
+   IdentListF()
+}
+
+void IdentListF () :
+{}
+{
+   (
+   <COLON>
+   IdentListF()
+   )?
+}
+
+void Stmt () :
+{}
+{
+   /*ForStmt*/
+   (<FOR> <OPENB> Expr() <SEMICOLON> ForStmtC())
+
+   |
+   /*WhileStmt */
+   (<WHILE> <OPENB> Expr() <CLOSEB> Stmt())
+
+   |
+   /*IFStmt */
+   (<IF> <OPENB> Expr() <CLOSEB> Stmt() ElsePart())
+
+   |
+   /*CompoundStmt*/
+   (<OPENC> A ())
+
+   |
+   /*Declaration*/
+   (Type ()
+   IdentList()
+   <SEMICOLON>)
+
+   |
+   /*Expression*/
+   (Expr()
+   <SEMICOLON>)
+
+   |
+   /*SemiColon*/
+   (<SEMICOLON>)
+}
+
+void ElsePart () :
+{}
+{
+   (LOOKAHEAD(1)
+   <ELSE>
+   Stmt())?
+}
+
+void ForStmtC () :
+{}
+{
+   (Expr()
+   <SEMICOLON>
+   Expr()
+   <CLOSEB>
+   Stmt())
+   |
+   (<SEMICOLON>
+   <CLOSEB>
+   Stmt()
+   )
+}
+
+void CompoundStmt () :
+{}
+{
+   <OPENC>
+   A()
+}
+
+void A () :
+{}
+{
+   (StmtList() <CLOSEC>)
+   |
+   (<CLOSEC>)
+}
+
+void StmtList () :
+{}
+{
+   Stmt()
+   StmtList()
+}
+
+void Expr () :
+{}
+{
+   (<IDENTIFIER>
+   ExprR ())
+   |
+   (Rvalue())
+}
+void ExprR () :
+{}
+{
+   (<ASSIGN>
+   Expr ())
+   |
+   (TermR() MagR() Rvalue())
+}
+
+void Rvalue () :
+{}
+{
+   Mag()
+   RvalueR()
+}
+void RvalueR () :
+{}
+{
+   (Compare ()
+   Mag()
+   RvalueR())?
+}
+void Compare () :
+{}
+{
+   <Compare>
+}
+
+void Mag () :
+{}
+{
+   Term()
+   MagR()
+}
+
+void MagR () :
+{}
+{
+   (
+   <MagOp>
+   Term()
+   MagR())?
+}
+
+void Term () :
+{}
+{
+   FactorB()
+   TermR()
+}
+
+void TermR () :
+{}
+{
+   (<TermOp>
+   Factor()
+   TermR())?
+}
+void Factor () :
+{}
+{
+   <OPENB> Expr() <CLOSEB>
+   |
+   (<FactorOp>
+   Factor())
+
+   |
+   <IDENTIFIER>
+
+   |
+   <NUMBER>
+}
+
+void FactorB () :
+{}
+{
+   <OPENB> Expr() <CLOSEB>
+   |
+   (<FactorOp>
+   Factor())
+
+   |
+   <NUMBER>
+}
