@@ -15,7 +15,7 @@ int main(int c){
        b = b + 1;
     }
     if (i < 10){
-        i = 10;
+        i = - 10 * (8/2);
     }else{
         if (i == 10){
             i = 0;
