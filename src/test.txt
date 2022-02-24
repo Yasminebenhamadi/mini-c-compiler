@@ -1,0 +1,5 @@
+int identifier (int identifier) {
+	if (identifier == identifier-identifier) ;
+	if (number) ; else ;
+	int identifier, identifier;
+}
