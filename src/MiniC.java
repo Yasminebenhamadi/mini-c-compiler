@@ -61,12 +61,6 @@ public class MiniC implements MiniCConstants {
     jj_consume_token(TYPE);
   }
 
-  static final public void Declaration() throws ParseException {
-    Type();
-    IdentList();
-    jj_consume_token(SEMICOLON);
-  }
-
   static final public void IdentList() throws ParseException {
     jj_consume_token(IDENTIFIER);
     IdentListF();

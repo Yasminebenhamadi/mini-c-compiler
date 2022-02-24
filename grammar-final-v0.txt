@@ -1,0 +1,41 @@
+Z → Function #
+Function → Type identifier (ArgList ) CompoundStmt 
+ArgList → Arg ArgListR
+ArgListR → , Arg ArgListR |ε 
+Arg → Type identifier 
+Type → int | float 
+IdentList → identifier IdentListF
+IdentListF → , IdentList | ε
+Stmt → Expr ; | ; 
+
+Stmt → for ( Expr ; ForStmtC
+ForStmtC → Expr ; Expr ) Stmt  |  ; ) Stmt 
+
+Stmt → while ( Expr ) Stmt 
+
+Stmt → if ( Expr ) Stmt ElsePart 
+ElsePart → else Stmt | ε 
+
+Stmt → { A
+CompoundStmt → { A
+A→StmtList}| }
+StmtList → Stmt StmtList 
+
+Stmt → Type IdentList ; 
+
+Expr → identifier ExprR | Rvalue 
+ExprR → = Expr | TermR MagR RvalueR 
+ 
+Rvalue → MagB RvalueR
+RvalueR → Compare Mag RvalueR | ε
+Compare → == | <= | >= | !=
+
+Mag → Term  MagR
+MagR → + Term MagR | - Term MagR | ε
+Term → Factor TermR
+TermR → * Factor TermR | / Factor TermR | ε
+Factor → ( Expr ) | - Factor | + Factor | identifier | number
+
+MagB → TermB  MagR
+TermB → FactorB TermR  
+FactorB → ( Expr ) | - Factor | + Factor | number

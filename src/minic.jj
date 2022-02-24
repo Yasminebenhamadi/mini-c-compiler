@@ -98,15 +98,6 @@ void Type() :
   <TYPE>
 }
 
-void Declaration() :
-{}
-{
-   Type ()
-   IdentList()
-   <SEMICOLON>
-
-}
-
 void IdentList () :
 {}
 {
