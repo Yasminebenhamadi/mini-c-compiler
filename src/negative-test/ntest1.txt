@@ -1,0 +1,24 @@
+int main(){
+    int a;
+    int i, b;
+    float c;
+    a = 5;
+    b = 3;
+    c = 9.0;
+    a = a + b;
+    b = a - b;
+    a = a - b;
+    while(a < 5){
+        a = a - 1;
+    }
+    for (i = 0; i < 10; i++){
+       b = b + 1;
+    }
+    if (i < 10){
+        i = 10;
+    }else{
+        if (i == 10){
+            i = 0;
+        }
+    }
+}
