@@ -383,7 +383,7 @@ public class MiniC implements MiniCConstants {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x200,0x200,0x357520,0x8000,0x310420,0x3d7520,0x357520,0x310020,0x800,0x80,0x20,0x40,0x310020,0x110020,};
+      jj_la1_0 = new int[] {0x200,0x200,0x957520,0x8000,0x910420,0x9d7520,0x957520,0x910020,0x800,0x80,0x20,0x40,0x910020,0x110020,};
    }
 
   /** Constructor with InputStream. */
@@ -521,7 +521,7 @@ public class MiniC implements MiniCConstants {
   /** Generate ParseException. */
   static public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[22];
+    boolean[] la1tokens = new boolean[24];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -535,7 +535,7 @@ public class MiniC implements MiniCConstants {
         }
       }
     }
-    for (int i = 0; i < 22; i++) {
+    for (int i = 0; i < 24; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

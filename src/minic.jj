@@ -51,7 +51,9 @@ TOKEN : { < OPENB : "(" > }
 TOKEN : { < CLOSEB : ")" > }
 TOKEN : { < OPENC : "{" > }
 TOKEN : { < CLOSEC : "}" > }
-TOKEN : { < NUMBER : (["0"-"9"])+ > }
+TOKEN : { < NUMBER : (<FLOATNum> | <INTNum>) > }
+TOKEN : { < INTNum : (["0"-"9"])+ > }
+TOKEN : { < FLOATNum : (<INTNum>"."<INTNum>)+ > }
 TOKEN : { < IDENTIFIER : (["a"-"z"])+ > }
 
 void Z() :

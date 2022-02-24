@@ -41,7 +41,11 @@ public interface MiniCConstants {
   /** RegularExpression Id. */
   int NUMBER = 20;
   /** RegularExpression Id. */
-  int IDENTIFIER = 21;
+  int INTNum = 21;
+  /** RegularExpression Id. */
+  int FLOATNum = 22;
+  /** RegularExpression Id. */
+  int IDENTIFIER = 23;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -69,6 +73,8 @@ public interface MiniCConstants {
     "\"{\"",
     "\"}\"",
     "<NUMBER>",
+    "<INTNum>",
+    "<FLOATNum>",
     "<IDENTIFIER>",
   };
 

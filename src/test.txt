@@ -1,5 +1,5 @@
 int identifier (int identifier) {
-	if (identifier == identifier-identifier) ;
+	if (aqwe == 5567-9.00) ;
 	if (number) ; else ;
 	int identifier, identifier;
 }
