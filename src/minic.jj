@@ -1,23 +1,26 @@
 options {
-  BUILD_PARSER = true;
-  BUILD_TOKEN_MANAGER = true;
+
 }
 
 PARSER_BEGIN(MiniC)
+import java.io.*;
 
 /**  Analyseur lexico-syntaxique Mini-C */
 public class MiniC {
 
   /** Main entry point. */
   public static void main(String args[]) throws ParseException {
-      MiniC parser = new MiniC(System.in);
-      while(true){
-        try{
+      MiniC parser = null ; //new MiniC(System.in);
+      try {
+            parser = new MiniC (new FileInputStream("test.txt"));
             parser.Z();
-        }
-        catch(Exception e){
-            System.out.println("error");
-        }
+      }
+      catch (FileNotFoundException e) {
+            System.out.println("File not found. Exiting.") ;
+            System.exit(0) ;
+      }
+      catch(Exception e){
+            System.out.println(e);
       }
   }
 }
@@ -33,12 +36,9 @@ SKIP : {
 | <"\r">
 }
 
-TOKEN : { < MagOp : "+" | "." > }
+TOKEN : { < PlusMinus  : "+" | "-" > }
 TOKEN : { < TermOp : "*" | "/" > }
-TOKEN : { < FactorOp  : "+" | "-" > }
 TOKEN : { < Compare  : "==" | "<" | ">" | "<=" | ">=" | "!="> }
-TOKEN : { < NUMBER : "number" > }
-TOKEN : { < IDENTIFIER : "identifier" > }
 TOKEN : { < TYPE : "int" | "float" > }
 TOKEN : { < COLON : "," > }
 TOKEN : { < SEMICOLON : ";" > }
@@ -51,7 +51,8 @@ TOKEN : { < OPENB : "(" > }
 TOKEN : { < CLOSEB : ")" > }
 TOKEN : { < OPENC : "{" > }
 TOKEN : { < CLOSEC : "}" > }
-
+TOKEN : { < NUMBER : (["0"-"9"])+ > }
+TOKEN : { < IDENTIFIER : (["a"-"z"])+ > }
 
 void Z() :
 {}
@@ -116,7 +117,7 @@ void IdentListF () :
 {
    (
    <COLON>
-   IdentListF()
+   IdentList()
    )?
 }
 
@@ -196,7 +197,7 @@ void StmtList () :
 {}
 {
    Stmt()
-   StmtList()
+   (StmtList())?
 }
 
 void Expr () :
@@ -213,13 +214,13 @@ void ExprR () :
    (<ASSIGN>
    Expr ())
    |
-   (TermR() MagR() Rvalue())
+   (TermR() MagR() RvalueR())
 }
 
 void Rvalue () :
 {}
 {
-   Mag()
+   MagB()
    RvalueR()
 }
 void RvalueR () :
@@ -246,7 +247,7 @@ void MagR () :
 {}
 {
    (
-   <MagOp>
+   <PlusMinus>
    Term()
    MagR())?
 }
@@ -254,7 +255,7 @@ void MagR () :
 void Term () :
 {}
 {
-   FactorB()
+   Factor()
    TermR()
 }
 
@@ -270,7 +271,7 @@ void Factor () :
 {
    <OPENB> Expr() <CLOSEB>
    |
-   (<FactorOp>
+   (<PlusMinus>
    Factor())
 
    |
@@ -280,12 +281,26 @@ void Factor () :
    <NUMBER>
 }
 
+/*No identifier conflict*/
+
+void MagB () :
+{}
+{
+   TermB()
+   MagR()
+}
+void TermB () :
+{}
+{
+   FactorB()
+   TermR()
+}
 void FactorB () :
 {}
 {
    <OPENB> Expr() <CLOSEB>
    |
-   (<FactorOp>
+   (<PlusMinus>
    Factor())
 
    |
