@@ -1,0 +1,663 @@
+options {
+
+}
+
+PARSER_BEGIN(MiniC)
+import java.io.*;
+import java.util.*;
+
+/**  Analyseur lexico-syntaxique Mini-C */
+public class MiniC {
+
+  static private Result result = new Result();
+  static private ArrayList<Variable> variables = new ArrayList<Variable>();
+  static private int tempCount = 1 ;
+
+  /** Main entry point. */
+  public static void main(String args[]) throws ParseException {
+      MiniC parser = null ; //new MiniC(System.in);
+      try {
+            parser = new MiniC (new FileInputStream("test.txt"));
+            parser.Z();
+      }
+      catch (FileNotFoundException e) {
+            System.out.println("File not found. Exiting.") ;
+            System.exit(0) ;
+      }
+      catch(Exception e){
+            System.out.println(e);
+      }
+  }
+  static private String nextTemp (){
+    return "TEMP"+Integer.toString(tempCount);
+  }
+  static private void checkVariable (Variable v){
+    if (variables.contains(v)){
+      result.addError("Identifier "+v.getName()+" already exists");
+    }
+    else {
+      variables.add(v);
+    }
+  }
+  static private String variableType (String name){
+    String type = null ;
+    for (Variable v : variables){
+        if(v.getName().equals(name)){
+            type = v.getType() ;
+            break;
+        }
+    }
+    if (type==null){
+       result.addError("Identifier "+name+" not found");
+    }
+    return type;
+  }
+  static private String resultType (String type1, String type2){
+    String type = null ;
+    if (type1 !=null && type2 !=null){
+       if (type1 =="float" || type2 == "float"){
+              type = "float" ;
+       }
+       else {
+              type = "int" ;
+       }
+    }
+    else {
+        result.addError("unrecognized identifier");
+    }
+    return type;
+  }
+
+  static boolean compatibleTypes(String type1, String type2){
+    if (type1=="int" && type2=="float"){
+        result.addError("Cannot assign float to int");
+        return false;
+    }
+    if (type1 ==null || type2 ==null){
+        result.addError("Unrecognized identifier");
+        return false;
+    }
+    return true;
+  }
+}
+
+PARSER_END(MiniC)
+
+
+
+SKIP : {
+  <" ">
+| <"\t">
+| <"\n">
+| <"\r">
+}
+
+TOKEN : { < PlusMinus  : "+" | "-" > }
+TOKEN : { < TermOp : "*" | "/" > }
+TOKEN : { < Compare  : "==" | "<" | ">" | "<=" | ">=" | "!="> }
+TOKEN : { < TYPE : "int" | "float" > }
+TOKEN : { < COLON : "," > }
+TOKEN : { < SEMICOLON : ";" > }
+TOKEN : { < ASSIGN : "=" > }
+TOKEN : { < FOR : "for" > }
+TOKEN : { < WHILE : "while" > }
+TOKEN : { < IF : "if" > }
+TOKEN : { < ELSE : "else" > }
+TOKEN : { < OPENB : "(" > }
+TOKEN : { < CLOSEB : ")" > }
+TOKEN : { < OPENC : "{" > }
+TOKEN : { < CLOSEC : "}" > }
+TOKEN : { < INT : (["0"-"9"])+ > }
+TOKEN : { < FLOAT : (<INT>"."<INT>)+ > }
+TOKEN : { < IDENTIFIER : (["a"-"z"])+ > }
+
+SimpleNode Z() :
+{}
+{
+  Function() <EOF>
+  {
+    return jjtThis;
+  }
+}
+
+void Function() :
+{}
+{
+  Type() <IDENTIFIER> <OPENB> ArgList() <CLOSEB> CompoundStmt()
+}
+
+void ArgList() :
+{}
+{
+  Arg()
+  ArgListR()
+}
+
+void ArgListR() :
+{}
+{
+  (
+  <COLON>
+  Arg()
+  ArgListR()
+  )?
+}
+
+void Arg() :
+{
+  String type;
+  String name;
+  Variable v;
+  Token t;
+}
+{
+  type = Type ()
+  t = <IDENTIFIER>
+  {
+        name = t.image;
+        v = new Variable(type,name);
+        checkVariable (v);
+  }
+}
+
+String Type() :
+{
+    Token t = null;
+}
+{
+  <TYPE>
+  {
+    return t.image;
+  }
+}
+
+void IdentList (String type) :
+{
+    String name;
+    Variable v;
+    Token t = null;
+}
+{
+   t = <IDENTIFIER>
+   {
+       name = t.image;
+       v = new Variable(type,name);
+       checkVariable (v);
+   }
+   IdentListF(type)
+}
+
+void IdentListF (String type) :
+{}
+{
+   (
+   <COLON>
+   IdentList(type)
+   )?
+}
+
+void Stmt () :
+{
+    String type;
+}
+{
+   /*ForStmt*/
+   (<FOR> <OPENB> Expr() <SEMICOLON> ForStmtC())
+
+   |
+   /*WhileStmt */
+   (<WHILE> <OPENB> Expr() <CLOSEB> Stmt())
+
+   |
+   /*IFStmt */
+   (<IF> <OPENB> Expr() <CLOSEB> Stmt() ElsePart())
+
+   |
+   /*CompoundStmt*/
+   (<OPENC> A ())
+
+   |
+   /*Declaration*/
+   (type = Type ()
+   IdentList(type)
+   <SEMICOLON>)
+
+   |
+   /*Expression*/
+   (Expr()
+   <SEMICOLON>)
+
+   |
+   /*SemiColon*/
+   (<SEMICOLON>)
+}
+
+void ElsePart () :
+{}
+{
+   (LOOKAHEAD(1)
+   <ELSE>
+   Stmt())?
+}
+
+void ForStmtC () :
+{}
+{
+   (Expr()
+   <SEMICOLON>
+   Expr()
+   <CLOSEB>
+   Stmt())
+   |
+   (<SEMICOLON>
+   <CLOSEB>
+   Stmt()
+   )
+}
+
+void CompoundStmt () :
+{}
+{
+   <OPENC>
+   A()
+}
+
+void A () :
+{}
+{
+   (StmtList() <CLOSEC>)
+   |
+   (<CLOSEC>)
+}
+
+void StmtList () :
+{}
+{
+   Stmt()
+   (StmtList())?
+}
+
+Variable Expr () :
+{
+    String name ;
+    String type;
+    Variable v, r;
+    Token t = null;
+}
+{
+   (
+       t = <IDENTIFIER>
+       {
+           name = t.image;
+           type = variableType(name);
+           v = new Variable (type,name);
+       }
+       r = ExprR (v)
+       {
+          return r;
+       }
+   )
+   |
+   (
+       r = Rvalue()
+       {
+          return r;
+       }
+   )
+}
+Variable ExprR (Variable v1) :
+{
+    Variable v2;
+    boolean compatibleType;
+    Quadruplet q;
+    String op ;
+    Token t;
+}
+{
+   (
+        t = <ASSIGN>
+        v2 = Expr ()
+        {
+            op = t.image;
+            compatibleType = compatibleTypes(v1.getType(),v2.getType());
+            if (compatibleType){
+                q = new Quadruplet ( op , v2.getName(), "", v1.getName());
+            }
+        }
+        {
+            return v1;
+        }
+   )
+   |
+   (
+       v2 = TermR(v1)
+       v2 = MagR(v2)
+       v2 = RvalueR(v2)
+       {
+            return v2;
+       }
+   )
+}
+
+Variable Rvalue () :
+{
+    Variable v1,v2;
+}
+{
+   v1 = MagB()
+   v2 = RvalueR(v1)
+   {
+        return v2;
+   }
+}
+Variable RvalueR (Variable v1) :
+{
+    String op, name,type;
+    Variable v2, r, temp;
+    Quadruplet q;
+}
+{
+   (
+       op = Compare ()
+       v2 = Mag()
+        {
+            name = nextTemp();
+            type = "int";
+            temp = new Variable(type,name);
+            if (v1.getType() == null || v2.getType() == null){
+                result.addError("unrecognized identifier");
+            }
+            else {
+                q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+            }
+        }
+
+        r = RvalueR(temp)
+        {
+            return r ;
+        }
+   )
+   |
+   {
+        return v1;
+   }
+}
+String Compare () :
+{
+    Token t = null;
+}
+{
+   t = <Compare>
+  {
+    return t.image;
+  }
+}
+
+Variable Mag () :
+{
+    Variable v, r;
+}
+{
+   v = Term()
+   r = MagR(v)
+   {
+        return r ;
+   }
+}
+
+Variable MagR (Variable v1) :
+{
+    String type;
+    String name;
+    Variable v2, r ;
+    Variable temp ;
+    String op ;
+    Token t;
+    Quadruplet q;
+}
+{
+   (
+        t = <PlusMinus>
+        v2 = Term()
+        {
+            op = t.image;
+            name = nextTemp();
+            type = resultType (v1.getType(), v2.getType());
+            temp = new Variable(type,name);
+            if (type == null){
+                result.addError("unrecognized identifier");
+            }
+            else {
+                q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+            }
+        }
+
+        r = MagR(temp)
+        {
+            return r ;
+        }
+   )
+   |
+   (
+       {
+           return v1 ;
+       }
+   )
+}
+
+Variable Term () :
+{
+    Variable v, r;
+}
+{
+   v = Factor()
+   r = TermR(v)
+   {
+        return r ;
+   }
+}
+
+Variable TermR (Variable v1) :
+{
+    String type;
+    String name;
+    Variable v2 , r ;
+    Variable temp ;
+    String op ;
+    Token t;
+    Quadruplet q;
+}
+{
+   (
+
+        t = <TermOp>
+        v2 = Factor()
+        {
+            op = t.image;
+            name = nextTemp();
+            type = resultType (v1.getType(), v2.getType());
+            temp = new Variable(type,name);
+            if (type == null){
+                result.addError("unrecognized identifier");
+            }
+            else {
+                q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+            }
+        }
+        r = TermR(temp)
+        {
+            return r ;
+        }
+   )
+   |
+   (
+       {
+           return v1 ;
+       }
+   )
+
+}
+Variable Factor () :
+{
+    String type;
+    String name;
+    Variable v ;
+    Variable temp ;
+    String val;
+    String op ;
+    Quadruplet q;
+    Token t;
+}
+{
+   (
+        <OPENB>
+        v = Expr()
+        {
+            return v ;
+        }
+        <CLOSEB>
+   )
+   |
+
+   (
+        t = <IDENTIFIER>
+        {
+            name = t.image;
+            type = variableType (name);
+            v = new Variable(name,type);
+            return v ;
+        }
+   )
+   |
+   (
+        t = <PlusMinus>
+        v = Factor()
+        {
+            op = t.image;
+            name = nextTemp();
+            type = v.getType();
+            temp = new Variable(type,name);
+            if (type == null){
+                result.addError("unrecognized identifier");
+            }
+            else {
+                q = new Quadruplet ( op , v.getName(), "", name);
+            }
+            return temp ;
+        }
+   )
+
+   |
+   (
+       t = <FLOAT>
+       {
+            val = t.image;
+            op = "=";
+            name = nextTemp ();
+            type = "float";
+            temp = new Variable(type,name);
+            q = new Quadruplet ( op , val, "", name);
+            return temp ;
+       }
+   )
+
+   |
+   (
+       t = <INT>
+       {
+            val = t.image;
+            op = "=";
+            name = nextTemp ();
+            type = "int";
+            temp = new Variable(type,name);
+            q = new Quadruplet ( op , val, "", name);
+            return temp ;
+       }
+   )
+}
+
+/*No identifier conflict*/
+
+Variable MagB () :
+{
+    Variable v, r;
+}
+{
+   v = TermB()
+   r =  MagR(v)
+   {
+        return r ;
+   }
+}
+Variable TermB () :
+{
+    Variable v,r;
+}
+{
+   v = FactorB()
+   r = TermR(v)
+   {
+        return r ;
+   }
+}
+Variable FactorB () :
+{
+    String type;
+    String name;
+    Variable v ;
+    Token t;
+    String val;
+    String op ;
+    Quadruplet q;
+}
+{
+   (
+        <OPENB>
+        v = Expr()
+        {
+            return v ;
+        }
+        <CLOSEB>
+   )
+   |
+   (
+        t = <PlusMinus>
+        v = Factor()
+        {
+            op = t.image;
+            name = nextTemp ();
+            type = v.getType();
+            v = new Variable(type,name);
+            q = new Quadruplet ( op , v.getName(), "", name);
+            return v ;
+        }
+   )
+
+   |
+   (
+       t = <FLOAT>
+       {
+            val = t.image;
+            op = "=";
+            name = nextTemp ();
+            type = "float";
+            v = new Variable(type,name);
+            q = new Quadruplet ( op , val, "", name);
+            return v ;
+       }
+   )
+
+   |
+   (
+       t = <INT>
+       {
+            val = t.image;
+            op = "=";
+            name = nextTemp ();
+            type = "int";
+            v = new Variable(type,name);
+            q = new Quadruplet ( op , val, "", name);
+            return v ;
+       }
+   )
+}
