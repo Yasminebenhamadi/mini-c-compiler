@@ -7,7 +7,13 @@ public class Result {
     private ArrayList<String> errors = new ArrayList<String>();
 
     void addQuad(Quadruplet q){
+        if (Quadruplet.getNum_quad() - 1 != quadList.size() ){
+            System.out.println(q.toString());
+        }
         quadList.add(q);
+    }
+    void addQuad(Quadruplet q, int i){
+        quadList.add(i,q);
     }
     void addError(String e){
         errors.add(e);
@@ -21,7 +27,7 @@ public class Result {
         try {
             FileWriter myWriter = new FileWriter(filename);
             for ( Quadruplet q : quadList) {
-                myWriter.write(q.toString());
+                myWriter.write(q.toString()+"\n");
             }
             myWriter.close();
         } catch (IOException e) {
@@ -47,4 +53,5 @@ public class Result {
             printErrors();
         }
     }
+
 }

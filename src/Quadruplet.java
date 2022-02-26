@@ -15,6 +15,14 @@ public class Quadruplet {
         this.destination = destination;
     }
 
+    public Quadruplet(int quadID, String operation, String source1, String source2, String destination) {
+        this.quadID = quadID;
+        this.operation = operation;
+        this.source1 = source1;
+        this.source2 = source2;
+        this.destination = destination;
+    }
+
     @java.lang.Override
     public java.lang.String toString() {
         return quadID + ":     "
@@ -22,6 +30,12 @@ public class Quadruplet {
                 + source1 + ",    "
                 +source2 + ",    "
                 + destination ;
+    }
+
+    public static void incrementNum_quad() {Quadruplet.num_quad ++;}
+
+    public static int getNum_quad() {
+        return num_quad;
     }
 
     public static void setNum_quad(int num_quad) {

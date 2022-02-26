@@ -1,4 +1,4 @@
-int main(int c){
+int main(int d){
     int a;
     int i, b;
     float c;
@@ -15,7 +15,7 @@ int main(int c){
        b = b + 1;
     }
     if (i < 10){
-        i = - 10 * (8/2);
+        i = 10;
     }else{
         if (i == 10){
             i = 0;

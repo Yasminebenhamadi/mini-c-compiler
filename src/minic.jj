@@ -22,7 +22,9 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants/*@egen*/ {/*@bg
       MiniC parser = null ; //new MiniC(System.in);
       try {
             parser = new MiniC (new FileInputStream("test.txt"));
-            parser.Z();
+            SimpleNode n = parser.Z();
+            //n.dump("");
+            result.printResult ("test");
       }
       catch (FileNotFoundException e) {
             System.out.println("File not found. Exiting.") ;
@@ -33,7 +35,9 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants/*@egen*/ {/*@bg
       }
   }
   static private String nextTemp (){
-    return "TEMP"+Integer.toString(tempCount);
+    String s = "TEMP"+Integer.toString(tempCount);
+    tempCount ++;
+    return s;
   }
   static private void checkVariable (Variable v){
     if (variables.contains(v)){
@@ -83,6 +87,12 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants/*@egen*/ {/*@bg
     }
     return true;
   }
+
+  public static void incrementNum_quad() {Quadruplet.incrementNum_quad();}
+  public static int getNum_quad() {
+          return Quadruplet.getNum_quad();
+  }
+
 }
 
 PARSER_END(MiniC)
@@ -117,20 +127,25 @@ TOKEN : { < IDENTIFIER : (["a"-"z"])+ > }
 
 SimpleNode Z() :
 {/*@bgen(jjtree) Z */
-  SimpleNode jjtn000 = new SimpleNode(JJTZ);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+    SimpleNode jjtn000 = new SimpleNode(JJTZ);
+    boolean jjtc000 = true;
+    jjtree.openNodeScope(jjtn000);
+/*@egen*/
+    Quadruplet q;
+}
 {/*@bgen(jjtree) Z */
   try {
 /*@egen*/
-  Function() <EOF>/*@bgen(jjtree)*/
+  Function()
+  <EOF>/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
   }
 /*@egen*/
   {
+    q = new Quadruplet ("STOP" , "", "", "");
+    result.addQuad(q);
     return jjtn000;
   }/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
@@ -157,14 +172,21 @@ SimpleNode Z() :
 
 void Function() :
 {/*@bgen(jjtree) Function */
-  SimpleNode jjtn000 = new SimpleNode(JJTFUNCTION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+    SimpleNode jjtn000 = new SimpleNode(JJTFUNCTION);
+    boolean jjtc000 = true;
+    jjtree.openNodeScope(jjtn000);
+/*@egen*/
+    Token t;
+}
 {/*@bgen(jjtree) Function */
   try {
 /*@egen*/
-  Type() <IDENTIFIER> <OPENB> ArgList() <CLOSEB> CompoundStmt()/*@bgen(jjtree)*/
+  Type()
+  <IDENTIFIER>
+  <OPENB>
+  ArgList()
+  <CLOSEB>
+  CompoundStmt()/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -315,7 +337,7 @@ String Type() :
 {/*@bgen(jjtree) Type */
   try {
 /*@egen*/
-  <TYPE>/*@bgen(jjtree)*/
+  t = <TYPE>/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
@@ -416,20 +438,123 @@ void Stmt () :
     jjtree.openNodeScope(jjtn000);
 /*@egen*/
     String type;
+    Variable e1;
+    Quadruplet q;
+    int forI = -1;
+    boolean c;
 }
 {/*@bgen(jjtree) Stmt */
    try {
 /*@egen*/
    /*ForStmt*/
-   (<FOR> <OPENB> Expr() <SEMICOLON> ForStmtC())
+   (
+        <FOR> <OPENB>
+        e1 = Expr()
+        <SEMICOLON>
+        {
+            int loopF = getNum_quad();
+        }
+        // ForStmtC
+        (
+               (
+                       (
+                           Expr()
+                           <SEMICOLON>
+                           {
+                                c = true;
+                                forI = getNum_quad();
+                                incrementNum_quad();
+                           }
+                       )
+                       |
+                       (
+                           <SEMICOLON>
+                           {
+                                c = false;
+                           }
+                       )
+               )
+               // ForStmtCC
+                (
+                       (
+                           Expr()
+                           <CLOSEB>
+                           Stmt()
+                       )
+                       |
+                       (
+                           <CLOSEB>
+                           Stmt()
+                       )
+                )/*@bgen(jjtree)*/
+                {
+                  jjtree.closeNodeScope(jjtn000, true);
+                  jjtc000 = false;
+                }
+/*@egen*/
+                {
+                      if (c){
+                          q = new Quadruplet ( forI,"JZ" , "", "", Integer.toString(getNum_quad() + 1));
+                          result.addQuad(q, forI);
+                      }
+                      q = new Quadruplet ("JMP" , "", "", Integer.toString(loopF));
+                      result.addQuad(q);
+                }
+        )
+   )
 
    |
    /*WhileStmt */
-   (<WHILE> <OPENB> Expr() <CLOSEB> Stmt())
+   (
+       <WHILE> <OPENB>
+       {
+            int loop = getNum_quad();
+       }
+       e1 = Expr()
+       <CLOSEB>
+        {
+            int ifI;
+            ifI = getNum_quad();
+            incrementNum_quad();
+        }
+        Stmt()/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
+        {
+            if (e1.getType() != null){
+                q = new Quadruplet ( ifI,"JZ" , "", "", Integer.toString(getNum_quad() + 1));
+                result.addQuad(q, ifI);
+                q = new Quadruplet ("JMP" , "", "", Integer.toString(loop));
+                result.addQuad(q);
+            }
+        }
+   )
 
    |
    /*IFStmt */
-   (<IF> <OPENB> Expr() <CLOSEB> Stmt() ElsePart())
+   (
+        <IF> <OPENB>
+        e1 = Expr()
+        <CLOSEB>
+        {
+            int elseI, cont;
+            ifI = getNum_quad();
+            incrementNum_quad();
+        }
+        Stmt()
+        {
+            elseI = getNum_quad();
+            if (e1.getType() != null){
+                q = new Quadruplet ( ifI,"JZ" , "", "", Integer.toString(elseI + 1));
+                result.addQuad(q, ifI);
+            }
+            incrementNum_quad();
+        }
+        ElsePart(elseI)
+   )
 
    |
    /*CompoundStmt*/
@@ -437,14 +562,19 @@ void Stmt () :
 
    |
    /*Declaration*/
-   (type = Type ()
-   IdentList(type)
-   <SEMICOLON>)
+   (
+       type = Type ()
+       IdentList(type)
+       <SEMICOLON>
+   )
 
    |
    /*Expression*/
-   (Expr()
-   <SEMICOLON>)
+   (
+
+       Expr()
+       <SEMICOLON>
+   )
 
    |
    /*SemiColon*/
@@ -471,7 +601,7 @@ void Stmt () :
 /*@egen*/
 }
 
-void ElsePart () :
+void ElsePart (int elseI) :
 {/*@bgen(jjtree) ElsePart */
   SimpleNode jjtn000 = new SimpleNode(JJTELSEPART);
   boolean jjtc000 = true;
@@ -480,50 +610,15 @@ void ElsePart () :
 {/*@bgen(jjtree) ElsePart */
    try {
 /*@egen*/
-   (LOOKAHEAD(1)
-   <ELSE>
-   Stmt())?/*@bgen(jjtree)*/
-   } catch (Throwable jjte000) {
-     if (jjtc000) {
-       jjtree.clearNodeScope(jjtn000);
-       jjtc000 = false;
-     } else {
-       jjtree.popNode();
-     }
-     if (jjte000 instanceof RuntimeException) {
-       throw (RuntimeException)jjte000;
-     }
-     if (jjte000 instanceof ParseException) {
-       throw (ParseException)jjte000;
-     }
-     throw (Error)jjte000;
-   } finally {
-     if (jjtc000) {
-       jjtree.closeNodeScope(jjtn000, true);
-     }
-   }
-/*@egen*/
-}
-
-void ForStmtC () :
-{/*@bgen(jjtree) ForStmtC */
-  SimpleNode jjtn000 = new SimpleNode(JJTFORSTMTC);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) ForStmtC */
-   try {
-/*@egen*/
-   (Expr()
-   <SEMICOLON>
-   Expr()
-   <CLOSEB>
-   Stmt())
-   |
-   (<SEMICOLON>
-   <CLOSEB>
-   Stmt()
-   )/*@bgen(jjtree)*/
+   (
+       LOOKAHEAD(1)
+       <ELSE>
+       Stmt()
+        {
+                Quadruplet q = new Quadruplet ( elseI,"JMP" , "", "", Integer.toString(getNum_quad()));
+                result.addQuad(q, elseI);
+        }
+   )?/*@bgen(jjtree)*/
    } catch (Throwable jjte000) {
      if (jjtc000) {
        jjtree.clearNodeScope(jjtn000);
@@ -733,6 +828,7 @@ Variable ExprR (Variable v1) :
             compatibleType = compatibleTypes(v1.getType(),v2.getType());
             if (compatibleType){
                 q = new Quadruplet ( op , v2.getName(), "", v1.getName());
+                result.addQuad(q);
             }
         }/*@bgen(jjtree)*/
         {
@@ -847,6 +943,7 @@ Variable RvalueR (Variable v1) :
             }
             else {
                 q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+                result.addQuad(q);
             }
         }
 
@@ -991,6 +1088,7 @@ Variable MagR (Variable v1) :
             }
             else {
                 q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+                result.addQuad(q);
             }
         }
 
@@ -1111,6 +1209,7 @@ Variable TermR (Variable v1) :
             }
             else {
                 q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+                result.addQuad(q);
             }
         }
         r = TermR(temp)/*@bgen(jjtree)*/
@@ -1177,10 +1276,15 @@ Variable Factor () :
    (
         <OPENB>
         v = Expr()
+        <CLOSEB>/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
         {
             return v ;
         }
-        <CLOSEB>
    )
    |
 
@@ -1194,7 +1298,7 @@ Variable Factor () :
         {
             name = t.image;
             type = variableType (name);
-            v = new Variable(name,type);
+            v = new Variable(type, name);
             return v ;
         }
    )
@@ -1217,6 +1321,7 @@ Variable Factor () :
             }
             else {
                 q = new Quadruplet ( op , v.getName(), "", name);
+                result.addQuad(q);
             }
             return temp ;
         }
@@ -1237,6 +1342,7 @@ Variable Factor () :
             type = "float";
             temp = new Variable(type,name);
             q = new Quadruplet ( op , val, "", name);
+            result.addQuad(q);
             return temp ;
        }
    )
@@ -1256,6 +1362,7 @@ Variable Factor () :
             type = "int";
             temp = new Variable(type,name);
             q = new Quadruplet ( op , val, "", name);
+            result.addQuad(q);
             return temp ;
        }
    )/*@bgen(jjtree)*/
@@ -1387,10 +1494,15 @@ Variable FactorB () :
    (
         <OPENB>
         v = Expr()
+        <CLOSEB>/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+        }
+/*@egen*/
         {
             return v ;
         }
-        <CLOSEB>
    )
    |
    (
@@ -1407,6 +1519,7 @@ Variable FactorB () :
             type = v.getType();
             v = new Variable(type,name);
             q = new Quadruplet ( op , v.getName(), "", name);
+            result.addQuad(q);
             return v ;
         }
    )
@@ -1426,6 +1539,7 @@ Variable FactorB () :
             type = "float";
             v = new Variable(type,name);
             q = new Quadruplet ( op , val, "", name);
+            result.addQuad(q);
             return v ;
        }
    )
@@ -1445,6 +1559,7 @@ Variable FactorB () :
             type = "int";
             v = new Variable(type,name);
             q = new Quadruplet ( op , val, "", name);
+            result.addQuad(q);
             return v ;
        }
    )/*@bgen(jjtree)*/

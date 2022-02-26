@@ -14,7 +14,9 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
       MiniC parser = null ; //new MiniC(System.in);
       try {
             parser = new MiniC (new FileInputStream("test.txt"));
-            parser.Z();
+            SimpleNode n = parser.Z();
+            //n.dump("");
+            result.printResult ("test");
       }
       catch (FileNotFoundException e) {
             System.out.println("File not found. Exiting.") ;
@@ -25,7 +27,9 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
       }
   }
   static private String nextTemp (){
-    return "TEMP"+Integer.toString(tempCount);
+    String s = "TEMP"+Integer.toString(tempCount);
+    tempCount ++;
+    return s;
   }
   static private void checkVariable (Variable v){
     if (variables.contains(v)){
@@ -76,16 +80,23 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     return true;
   }
 
+  public static void incrementNum_quad() {Quadruplet.incrementNum_quad();}
+  public static int getNum_quad() {
+          return Quadruplet.getNum_quad();
+  }
+
   static final public SimpleNode Z() throws ParseException {
  /*@bgen(jjtree) Z */
-  SimpleNode jjtn000 = new SimpleNode(JJTZ);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
+    SimpleNode jjtn000 = new SimpleNode(JJTZ);
+    boolean jjtc000 = true;
+    jjtree.openNodeScope(jjtn000);Quadruplet q;
     try {
       Function();
       jj_consume_token(0);
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
+    q = new Quadruplet ("STOP" , "", "", "");
+    result.addQuad(q);
     {if (true) return jjtn000;}
     } catch (Throwable jjte000) {
     if (jjtc000) {
@@ -111,9 +122,9 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
 
   static final public void Function() throws ParseException {
  /*@bgen(jjtree) Function */
-  SimpleNode jjtn000 = new SimpleNode(JJTFUNCTION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
+    SimpleNode jjtn000 = new SimpleNode(JJTFUNCTION);
+    boolean jjtc000 = true;
+    jjtree.openNodeScope(jjtn000);Token t;
     try {
       Type();
       jj_consume_token(IDENTIFIER);
@@ -251,7 +262,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     boolean jjtc000 = true;
     jjtree.openNodeScope(jjtn000);Token t = null;
     try {
-      jj_consume_token(TYPE);
+      t = jj_consume_token(TYPE);
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
     {if (true) return t.image;}
@@ -338,29 +349,102 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     SimpleNode jjtn000 = new SimpleNode(JJTSTMT);
     boolean jjtc000 = true;
     jjtree.openNodeScope(jjtn000);String type;
+    Variable e1;
+    Quadruplet q;
+    int forI = -1;
+    boolean c;
     try {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case FOR:
         jj_consume_token(FOR);
         jj_consume_token(OPENB);
-        Expr();
+        e1 = Expr();
         jj_consume_token(SEMICOLON);
-        ForStmtC();
+            int loopF = getNum_quad();
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case PlusMinus:
+        case OPENB:
+        case INT:
+        case FLOAT:
+        case IDENTIFIER:
+          Expr();
+          jj_consume_token(SEMICOLON);
+                                c = true;
+                                forI = getNum_quad();
+                                incrementNum_quad();
+          break;
+        case SEMICOLON:
+          jj_consume_token(SEMICOLON);
+                                c = false;
+          break;
+        default:
+          jj_la1[2] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case PlusMinus:
+        case OPENB:
+        case INT:
+        case FLOAT:
+        case IDENTIFIER:
+          Expr();
+          jj_consume_token(CLOSEB);
+          Stmt();
+          break;
+        case CLOSEB:
+          jj_consume_token(CLOSEB);
+          Stmt();
+          break;
+        default:
+          jj_la1[3] = jj_gen;
+          jj_consume_token(-1);
+          throw new ParseException();
+        }
+                  jjtree.closeNodeScope(jjtn000, true);
+                  jjtc000 = false;
+                      if (c){
+                          q = new Quadruplet ( forI,"JZ" , "", "", Integer.toString(getNum_quad() + 1));
+                          result.addQuad(q, forI);
+                      }
+                      q = new Quadruplet ("JMP" , "", "", Integer.toString(loopF));
+                      result.addQuad(q);
         break;
       case WHILE:
         jj_consume_token(WHILE);
         jj_consume_token(OPENB);
-        Expr();
+            int loop = getNum_quad();
+        e1 = Expr();
         jj_consume_token(CLOSEB);
+            int ifI;
+            ifI = getNum_quad();
+            incrementNum_quad();
         Stmt();
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+            if (e1.getType() != null){
+                q = new Quadruplet ( ifI,"JZ" , "", "", Integer.toString(getNum_quad() + 1));
+                result.addQuad(q, ifI);
+                q = new Quadruplet ("JMP" , "", "", Integer.toString(loop));
+                result.addQuad(q);
+            }
         break;
       case IF:
         jj_consume_token(IF);
         jj_consume_token(OPENB);
-        Expr();
+        e1 = Expr();
         jj_consume_token(CLOSEB);
+            int elseI, cont;
+            ifI = getNum_quad();
+            incrementNum_quad();
         Stmt();
-        ElsePart();
+            elseI = getNum_quad();
+            if (e1.getType() != null){
+                q = new Quadruplet ( ifI,"JZ" , "", "", Integer.toString(elseI + 1));
+                result.addQuad(q, ifI);
+            }
+            incrementNum_quad();
+        ElsePart(elseI);
         break;
       case OPENC:
         jj_consume_token(OPENC);
@@ -383,7 +467,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
         jj_consume_token(SEMICOLON);
         break;
       default:
-        jj_la1[2] = jj_gen;
+        jj_la1[4] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -408,7 +492,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     }
   }
 
-  static final public void ElsePart() throws ParseException {
+  static final public void ElsePart(int elseI) throws ParseException {
  /*@bgen(jjtree) ElsePart */
   SimpleNode jjtn000 = new SimpleNode(JJTELSEPART);
   boolean jjtc000 = true;
@@ -418,59 +502,12 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
       case ELSE:
         jj_consume_token(ELSE);
         Stmt();
+                Quadruplet q = new Quadruplet ( elseI,"JMP" , "", "", Integer.toString(getNum_quad()));
+                result.addQuad(q, elseI);
         break;
       default:
-        jj_la1[3] = jj_gen;
+        jj_la1[5] = jj_gen;
         ;
-      }
-    } catch (Throwable jjte000) {
-     if (jjtc000) {
-       jjtree.clearNodeScope(jjtn000);
-       jjtc000 = false;
-     } else {
-       jjtree.popNode();
-     }
-     if (jjte000 instanceof RuntimeException) {
-       {if (true) throw (RuntimeException)jjte000;}
-     }
-     if (jjte000 instanceof ParseException) {
-       {if (true) throw (ParseException)jjte000;}
-     }
-     {if (true) throw (Error)jjte000;}
-    } finally {
-     if (jjtc000) {
-       jjtree.closeNodeScope(jjtn000, true);
-     }
-    }
-  }
-
-  static final public void ForStmtC() throws ParseException {
- /*@bgen(jjtree) ForStmtC */
-  SimpleNode jjtn000 = new SimpleNode(JJTFORSTMTC);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-    try {
-      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case PlusMinus:
-      case OPENB:
-      case INT:
-      case FLOAT:
-      case IDENTIFIER:
-        Expr();
-        jj_consume_token(SEMICOLON);
-        Expr();
-        jj_consume_token(CLOSEB);
-        Stmt();
-        break;
-      case SEMICOLON:
-        jj_consume_token(SEMICOLON);
-        jj_consume_token(CLOSEB);
-        Stmt();
-        break;
-      default:
-        jj_la1[4] = jj_gen;
-        jj_consume_token(-1);
-        throw new ParseException();
       }
     } catch (Throwable jjte000) {
      if (jjtc000) {
@@ -547,7 +584,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
         jj_consume_token(CLOSEC);
         break;
       default:
-        jj_la1[5] = jj_gen;
+        jj_la1[6] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -594,7 +631,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
         StmtList();
         break;
       default:
-        jj_la1[6] = jj_gen;
+        jj_la1[7] = jj_gen;
         ;
       }
     } catch (Throwable jjte000) {
@@ -648,7 +685,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
           {if (true) return r;}
         break;
       default:
-        jj_la1[7] = jj_gen;
+        jj_la1[8] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -692,13 +729,14 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             compatibleType = compatibleTypes(v1.getType(),v2.getType());
             if (compatibleType){
                 q = new Quadruplet ( op , v2.getName(), "", v1.getName());
+                result.addQuad(q);
             }
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
             {if (true) return v1;}
         break;
       default:
-        jj_la1[8] = jj_gen;
+        jj_la1[9] = jj_gen;
         v2 = TermR(v1);
         v2 = MagR(v2);
         v2 = RvalueR(v2);
@@ -781,6 +819,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             }
             else {
                 q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+                result.addQuad(q);
             }
         r = RvalueR(temp);
           jjtree.closeNodeScope(jjtn000, true);
@@ -788,7 +827,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             {if (true) return r ;}
         break;
       default:
-        jj_la1[9] = jj_gen;
+        jj_la1[10] = jj_gen;
      jjtree.closeNodeScope(jjtn000, true);
      jjtc000 = false;
         {if (true) return v1;}
@@ -891,6 +930,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             }
             else {
                 q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+                result.addQuad(q);
             }
         r = MagR(temp);
           jjtree.closeNodeScope(jjtn000, true);
@@ -898,7 +938,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             {if (true) return r ;}
         break;
       default:
-        jj_la1[10] = jj_gen;
+        jj_la1[11] = jj_gen;
          jjtree.closeNodeScope(jjtn000, true);
          jjtc000 = false;
            {if (true) return v1 ;}
@@ -983,6 +1023,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             }
             else {
                 q = new Quadruplet ( op , v1.getName(), v2.getName(), name);
+                result.addQuad(q);
             }
         r = TermR(temp);
           jjtree.closeNodeScope(jjtn000, true);
@@ -990,7 +1031,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             {if (true) return r ;}
         break;
       default:
-        jj_la1[11] = jj_gen;
+        jj_la1[12] = jj_gen;
          jjtree.closeNodeScope(jjtn000, true);
          jjtc000 = false;
            {if (true) return v1 ;}
@@ -1034,8 +1075,10 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
       case OPENB:
         jj_consume_token(OPENB);
         v = Expr();
-            {if (true) return v ;}
         jj_consume_token(CLOSEB);
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+            {if (true) return v ;}
         break;
       case IDENTIFIER:
         t = jj_consume_token(IDENTIFIER);
@@ -1043,7 +1086,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
           jjtc000 = false;
             name = t.image;
             type = variableType (name);
-            v = new Variable(name,type);
+            v = new Variable(type, name);
             {if (true) return v ;}
         break;
       case PlusMinus:
@@ -1060,6 +1103,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             }
             else {
                 q = new Quadruplet ( op , v.getName(), "", name);
+                result.addQuad(q);
             }
             {if (true) return temp ;}
         break;
@@ -1073,6 +1117,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             type = "float";
             temp = new Variable(type,name);
             q = new Quadruplet ( op , val, "", name);
+            result.addQuad(q);
             {if (true) return temp ;}
         break;
       case INT:
@@ -1085,10 +1130,11 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             type = "int";
             temp = new Variable(type,name);
             q = new Quadruplet ( op , val, "", name);
+            result.addQuad(q);
             {if (true) return temp ;}
         break;
       default:
-        jj_la1[12] = jj_gen;
+        jj_la1[13] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1197,8 +1243,10 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
       case OPENB:
         jj_consume_token(OPENB);
         v = Expr();
-            {if (true) return v ;}
         jj_consume_token(CLOSEB);
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+            {if (true) return v ;}
         break;
       case PlusMinus:
         t = jj_consume_token(PlusMinus);
@@ -1210,6 +1258,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             type = v.getType();
             v = new Variable(type,name);
             q = new Quadruplet ( op , v.getName(), "", name);
+            result.addQuad(q);
             {if (true) return v ;}
         break;
       case FLOAT:
@@ -1222,6 +1271,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             type = "float";
             v = new Variable(type,name);
             q = new Quadruplet ( op , val, "", name);
+            result.addQuad(q);
             {if (true) return v ;}
         break;
       case INT:
@@ -1234,10 +1284,11 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             type = "int";
             v = new Variable(type,name);
             q = new Quadruplet ( op , val, "", name);
+            result.addQuad(q);
             {if (true) return v ;}
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[14] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1273,13 +1324,13 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
   static public Token jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[14];
+  static final private int[] jj_la1 = new int[15];
   static private int[] jj_la1_0;
   static {
       jj_la1_init_0();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x200,0x200,0x757520,0x8000,0x710420,0x7d7520,0x757520,0x710020,0x800,0x80,0x20,0x40,0x710020,0x310020,};
+      jj_la1_0 = new int[] {0x200,0x200,0x710420,0x730020,0x757520,0x8000,0x7d7520,0x757520,0x710020,0x800,0x80,0x20,0x40,0x710020,0x310020,};
    }
 
   /** Constructor with InputStream. */
@@ -1300,7 +1351,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1315,7 +1366,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -1332,7 +1383,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1343,7 +1394,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -1359,7 +1410,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -1369,7 +1420,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 14; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 15; i++) jj_la1[i] = -1;
   }
 
   static private Token jj_consume_token(int kind) throws ParseException {
@@ -1425,7 +1476,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 14; i++) {
+    for (int i = 0; i < 15; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
