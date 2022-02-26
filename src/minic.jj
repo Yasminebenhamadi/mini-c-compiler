@@ -55,6 +55,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants/*@egen*/ {/*@bg
             break;
         }
     }
+
     if (type==null){
        result.addError("Identifier "+name+" not found");
     }
@@ -77,7 +78,9 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants/*@egen*/ {/*@bg
   }
 
   static boolean compatibleTypes(String type1, String type2){
-    if (type1=="int" && type2=="float"){
+    String intS = "int";
+    String floatS = "float" ;
+    if (type1.equals(intS) && type2.equals(floatS)){
         result.addError("Cannot assign float to int");
         return false;
     }
@@ -136,6 +139,7 @@ SimpleNode Z() :
 {/*@bgen(jjtree) Z */
   try {
 /*@egen*/
+  {System.out.println("heeere") ;}
   Function()
   <EOF>/*@bgen(jjtree)*/
   {
@@ -1253,7 +1257,6 @@ Variable TermR (Variable v1) :
      }
    }
 /*@egen*/
-
 }
 Variable Factor () :
 {/*@bgen(jjtree) Factor */

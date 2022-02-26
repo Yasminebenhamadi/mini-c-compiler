@@ -47,6 +47,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
             break;
         }
     }
+
     if (type==null){
        result.addError("Identifier "+name+" not found");
     }
@@ -69,7 +70,9 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
   }
 
   static boolean compatibleTypes(String type1, String type2){
-    if (type1=="int" && type2=="float"){
+    String intS = "int";
+    String floatS = "float" ;
+    if (type1.equals(intS) && type2.equals(floatS)){
         result.addError("Cannot assign float to int");
         return false;
     }
@@ -91,6 +94,7 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants, MiniCConstants
     boolean jjtc000 = true;
     jjtree.openNodeScope(jjtn000);Quadruplet q;
     try {
+   System.out.println("heeere") ;
       Function();
       jj_consume_token(0);
     jjtree.closeNodeScope(jjtn000, true);

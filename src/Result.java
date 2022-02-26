@@ -7,9 +7,6 @@ public class Result {
     private ArrayList<String> errors = new ArrayList<String>();
 
     void addQuad(Quadruplet q){
-        if (Quadruplet.getNum_quad() - 1 != quadList.size() ){
-            System.out.println(q.toString());
-        }
         quadList.add(q);
     }
     void addQuad(Quadruplet q, int i){

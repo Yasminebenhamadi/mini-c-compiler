@@ -26,9 +26,8 @@ class Variable {
     public boolean equals(Object object) {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
-        if (!super.equals(object)) return false;
         Variable variable = (Variable) object;
-        return name.equals(variable.name);
+        return this.name.equals(variable.getName());
     }
 
     public int hashCode() {

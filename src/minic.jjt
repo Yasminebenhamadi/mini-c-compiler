@@ -51,6 +51,7 @@ public class MiniC {
             break;
         }
     }
+
     if (type==null){
        result.addError("Identifier "+name+" not found");
     }
@@ -73,7 +74,9 @@ public class MiniC {
   }
 
   static boolean compatibleTypes(String type1, String type2){
-    if (type1=="int" && type2=="float"){
+    String intS = "int";
+    String floatS = "float" ;
+    if (type1.equals(intS) && type2.equals(floatS)){
         result.addError("Cannot assign float to int");
         return false;
     }
@@ -397,6 +400,7 @@ Variable Expr () :
 }
 {
    (
+        {System.out.println("heeere") ;}
        t = <IDENTIFIER>
        {
            name = t.image;
@@ -610,7 +614,6 @@ Variable TermR (Variable v1) :
            return v1 ;
        }
    )
-
 }
 Variable Factor () :
 {
