@@ -1,4 +1,4 @@
-public class Quadruplet {
+public class Quadruplet implements Comparable<Quadruplet>{
     private static int num_quad = 0;
     private int quadID;
     private String operation ;
@@ -25,8 +25,8 @@ public class Quadruplet {
 
     @java.lang.Override
     public java.lang.String toString() {
-        return quadID + ":     "
-                + operation  + ",    "
+        return  quadID  + ":    "
+                +operation  + ",    "
                 + source1 + ",    "
                 +source2 + ",    "
                 + destination ;
@@ -40,5 +40,14 @@ public class Quadruplet {
 
     public static void setNum_quad(int num_quad) {
         Quadruplet.num_quad = num_quad;
+    }
+
+    public int compareTo(Quadruplet q){
+        if(this.quadID==q.quadID)
+            return 0;
+        else if(this.quadID>q.quadID)
+            return 1;
+        else
+            return -1;
     }
 }

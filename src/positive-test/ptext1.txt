@@ -1,5 +1,10 @@
-int identifier (int identifier) {
-	if (identifier == identifier-identifier) ;
-	if (number) ; else ;
-	int identifier, identifier;
+int main(int d){
+    int i,p;
+    if (i < 10){
+        if (i < 10){
+                i = 10;
+        }else{
+                d = 0;
+        }
+    }
 }

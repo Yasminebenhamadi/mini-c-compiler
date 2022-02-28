@@ -20,12 +20,17 @@ public class Result {
         errors.clear();
         Quadruplet.setNum_quad(0);
     }
-    private void printFile (String filename){
+    private void printFile (String function){
         try {
-            FileWriter myWriter = new FileWriter(filename);
+            Collections.sort(quadList);
+            int i = quadList.size();
+            String quadFile = function+".quad" ;
+            FileWriter myWriter = new FileWriter(quadFile);
+            myWriter.write(function+": \n");
             for ( Quadruplet q : quadList) {
                 myWriter.write(q.toString()+"\n");
             }
+            myWriter.write(Integer.toString(i)+": STOP\n");
             myWriter.close();
         } catch (IOException e) {
             System.out.println("Error: can't generate intermediate code file.");
@@ -40,10 +45,10 @@ public class Result {
         }
     }
 
-    public void printResult (String filename){
+    public void printResult (String function){
         if (errors.isEmpty()){
-            String quadFile = filename+".quad" ;
-            printFile (quadFile);
+            String quadFile = function+".quad" ;
+            printFile (function);
             System.out.println("File: "+quadFile+" has been generated.");
         }
         else {

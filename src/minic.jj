@@ -24,7 +24,6 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants/*@egen*/ {/*@bg
             parser = new MiniC (new FileInputStream("test.txt"));
             SimpleNode n = parser.Z();
             //n.dump("");
-            result.printResult ("test");
       }
       catch (FileNotFoundException e) {
             System.out.println("File not found. Exiting.") ;
@@ -80,13 +79,16 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants/*@egen*/ {/*@bg
   static boolean compatibleTypes(String type1, String type2){
     String intS = "int";
     String floatS = "float" ;
-    if (type1.equals(intS) && type2.equals(floatS)){
-        result.addError("Cannot assign float to int");
-        return false;
-    }
+
     if (type1 ==null || type2 ==null){
         result.addError("Unrecognized identifier");
         return false;
+    }
+    else {
+        if (type1.equals(intS) && type2.equals(floatS)){
+                result.addError("Cannot assign float to int");
+                return false;
+        }
     }
     return true;
   }
@@ -95,7 +97,6 @@ public class MiniC/*@bgen(jjtree)*/implements MiniCTreeConstants/*@egen*/ {/*@bg
   public static int getNum_quad() {
           return Quadruplet.getNum_quad();
   }
-
 }
 
 PARSER_END(MiniC)
@@ -135,12 +136,12 @@ SimpleNode Z() :
     jjtree.openNodeScope(jjtn000);
 /*@egen*/
     Quadruplet q;
+    String f ;
 }
 {/*@bgen(jjtree) Z */
   try {
 /*@egen*/
-  {System.out.println("heeere") ;}
-  Function()
+  f = Function()
   <EOF>/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn000, true);
@@ -148,8 +149,7 @@ SimpleNode Z() :
   }
 /*@egen*/
   {
-    q = new Quadruplet ("STOP" , "", "", "");
-    result.addQuad(q);
+    result.printResult (f);
     return jjtn000;
   }/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
@@ -174,7 +174,7 @@ SimpleNode Z() :
 /*@egen*/
 }
 
-void Function() :
+String Function() :
 {/*@bgen(jjtree) Function */
     SimpleNode jjtn000 = new SimpleNode(JJTFUNCTION);
     boolean jjtc000 = true;
@@ -183,33 +183,41 @@ void Function() :
     Token t;
 }
 {/*@bgen(jjtree) Function */
-  try {
+   try {
 /*@egen*/
-  Type()
-  <IDENTIFIER>
+   Type()
+  t = <IDENTIFIER>
   <OPENB>
   ArgList()
   <CLOSEB>
   CompoundStmt()/*@bgen(jjtree)*/
-  } catch (Throwable jjte000) {
-    if (jjtc000) {
-      jjtree.clearNodeScope(jjtn000);
-      jjtc000 = false;
-    } else {
-      jjtree.popNode();
-    }
-    if (jjte000 instanceof RuntimeException) {
-      throw (RuntimeException)jjte000;
-    }
-    if (jjte000 instanceof ParseException) {
-      throw (ParseException)jjte000;
-    }
-    throw (Error)jjte000;
-  } finally {
-    if (jjtc000) {
-      jjtree.closeNodeScope(jjtn000, true);
-    }
+  {
+    jjtree.closeNodeScope(jjtn000, true);
+    jjtc000 = false;
   }
+/*@egen*/
+  {
+    return t.image ;
+  }/*@bgen(jjtree)*/
+   } catch (Throwable jjte000) {
+     if (jjtc000) {
+       jjtree.clearNodeScope(jjtn000);
+       jjtc000 = false;
+     } else {
+       jjtree.popNode();
+     }
+     if (jjte000 instanceof RuntimeException) {
+       throw (RuntimeException)jjte000;
+     }
+     if (jjte000 instanceof ParseException) {
+       throw (ParseException)jjte000;
+     }
+     throw (Error)jjte000;
+   } finally {
+     if (jjtc000) {
+       jjtree.closeNodeScope(jjtn000, true);
+     }
+   }
 /*@egen*/
 }
 
@@ -950,7 +958,6 @@ Variable RvalueR (Variable v1) :
                 result.addQuad(q);
             }
         }
-
         r = RvalueR(temp)/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);

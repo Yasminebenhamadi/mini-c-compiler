@@ -1,4 +1,4 @@
-int main(int d){
+int main (int d){
     int a;
     int i, b;
     float c;
@@ -8,16 +8,17 @@ int main(int d){
     a = a + b;
     b = a - b;
     a = a - b;
-    c = a ;
     while(a < 5){
         a = a - 1;
-    }
-    for (i = 0; i < 10; i = i+1){
-       b = b + 1;
+        for (i = 0; i < 10; i = i+1){
+           b = b + 1;
+        }
     }
     if (i < 10){
         i = 10;
     }else{
-         p = 0;
+        if (i == 10){
+            i = 0;
+        }
     }
 }
